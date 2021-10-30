@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>RedHat File and Directory Permissions</title>
+        
+		<meta name="description" content="Hi! While applying STIGs to a RHEL7 system I needed to verify permissions on every file &amp; folder inside each user&rsquo;s home directory. Finding ID V-204473 states &ldquo;The Red Hat Enterprise Linux operating system must be configured so that all files and directories contained in local interactive user home directories have a mode of 0750 or less permissive.&rdquo; If any files are found with a mode more permissive than 0750, this is a finding.">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="generator" content="Hugo 0.88.1" />
+        <meta name="robots" content="index,follow">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet" href="/dist/site.css">
+        <link rel="stylesheet" href="/dist/syntax.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,600,700,300&subset=latin,cyrillic-ext,latin-ext,cyrillic">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+        
+        
+        
+        
+        
+
+    </head>
+    <body>
+        
+
+        <div id="wrapper">
+            <header class="site-header">
+                <div class="container">
+                    <div class="site-title-wrapper">
+                        
+                            <h1 class="site-title">
+                                <a href="/">Confused Admin</a>
+                            </h1>
+                        
+                        
+                        
+                        
+                        
+                        
+                            <a class="button-square button-social hint--top" data-hint="Github" aria-label="Github" href="https://github.com/confusedadmin" rel="me">
+                                <i class="fa fa-github-alt" aria-hidden="true"></i>
+                            </a>
+                        
+                        
+                        
+                        
+                    </div>
+
+                    <ul class="site-nav">
+                        
+
+                    </ul>
+                </div>
+            </header>
+
+            <div id="container">
+
+
+<div class="container">
+    <article class="post-container" itemscope="" itemtype="http://schema.org/BlogPosting">
+        <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">RedHat File and Directory Permissions</h1>
+    
+    <p class="post-date post-line">
+        <span>Published <time datetime="2021-10-29" itemprop="datePublished">Fri, Oct 29, 2021</time></span>
+        <span>by</span>
+        <span itemscope="" itemprop="author" itemtype="https://schema.org/Person">
+            <span itemprop="name">
+                <a href="#" itemprop="url" rel="author">confusedadmin</a>
+            </span>
+        </span>
+    </p>
+    
+</header>
+
+        <div class="post-content clearfix" itemprop="articleBody">
+    
+
+    <h2 id="hi">Hi!</h2>
+<p>While applying STIGs to a RHEL7 system I needed to verify permissions on every file &amp; folder inside each user&rsquo;s home directory. Finding ID <a href="https://www.stigviewer.com/stig/red_hat_enterprise_linux_7/2020-09-03/finding/V-204473">V-204473</a> states &ldquo;The Red Hat Enterprise Linux operating system must be configured so that all files and directories contained in local interactive user home directories have a mode of 0750 or less permissive.&rdquo; If any files are found with a mode more permissive than 0750, this is a finding.</p>
+<p>Unfortunately, the Check Text only provides manual verification and fixes. Home directories can contain a ton of files so manual verification is not an option. I wrote bash scripts for both the check and the fix.</p>
+<pre tabindex="0"><code>#!/bin/bash
+# V-204473
+
+if [ $EUID != 0 ]; then
+    echo &quot;Please run as superuser.&quot;
+    exit
+fi
+
+cd /home
+
+for D in */; do
+
+   find &quot;/home/$D&quot; -type d -perm /027 -not -iname .\* -exec ls -ld --time-style=long-iso {} \;  | \
+   sed -e 's/ /\\ /g' | \
+   awk '{print $8}'   | \
+   while read line; do
+      a=$(stat -c %a ${line});
+      echo $a &quot; &quot; ${line}
+      chmod o-rwx,g-w ${line}
+   done
+
+   find &quot;/home/$D&quot; -type f -perm /027 -not -iname .\* -exec ls -l --time-style=long-iso {} \;  | \
+   sed -e 's/ /\\ /g' | \
+   awk '{print $8}'   | \
+   while read line; do
+      a=$(stat -c %a ${line});
+      echo $a &quot; &quot; ${line}
+      chmod o-rwx,g-w ${line}
+   done
+done
+
+echo -e &quot;\nDone setting file permissions.\n\n&quot;
+
+</code></pre><p>The gist of the script is to search the home directories using a permission mask of 027. This means any file that has group write permission (rwxr<em><strong>w</strong></em>xrwx), or any bits set in the public/other class (rwxrwx<em><strong>rwx</strong></em>) will be processed. &ldquo;Find&rdquo; executes &ldquo;ls&rdquo; which lists the file with its full path. &ldquo;Sed&rdquo; escapes any spaces that might be in the filepath or name. Finally the script outputs the name of the file and and its current mode before removing the excess permissions with chmod.</p>
+<p><a href="https://www.stigviewer.com/stig/red_hat_enterprise_linux_7/2020-09-03/finding/V-204476">V-204476</a> is very similar.</p>
+<pre tabindex="0"><code>#!/bin/bash
+# V-204476
+
+if [ $EUID != 0 ]; then
+    echo &quot;Please run as superuser.&quot;
+    exit
+fi
+
+cd /home
+
+for D in */; do
+
+   find &quot;/home/$D&quot; -type f -iname &quot;.*&quot; -perm /027 -exec ls -l --time-style=long-iso {} \;  | \
+   sed -e 's/ /\\ /g' | \
+   awk '{print $8}'   | \
+   while read line; do
+     a=$(stat -c %a ${line});
+     echo $a &quot; &quot; ${line}
+     chmod o-rwx,g-wx ${line}
+   done
+   
+done
+
+echo -e &quot;\nDone setting file permissions.\n\n&quot;
+
+</code></pre><p>Questions, comments, and pull requests are encouraged at <a href="https://github.com/confusedadmin/rhel">Github</a> or in the comments below.</p>
+
+</div>
+
+        <footer class="post-footer clearfix"><div class="share">
+            <a class="icon-twitter" href="https://twitter.com/share?text=RedHat%20File%20and%20Directory%20Permissions&url=%2fredhat-file-and-directory-permissions%2f"
+                onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" aria-label="Share on Twitter">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+            </a>
+            <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=%2fredhat-file-and-directory-permissions%2f"
+                onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;" aria-label="Share on Facebook">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+            </a>
+    </div>
+</footer>
+
+        
+    </article>
+</div>
+
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="site-title-wrapper">
+                    <h1 class="site-title">
+                        <a href="/">Confused Admin</a>
+                    </h1>
+                    <a class="button-square button-jump-top js-jump-top" href="#" aria-label="Back to Top">
+                        <i class="fa fa-angle-up" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+            </div>
+        </footer>
+
+        <script src="/js/jquery-1.11.3.min.js"></script>
+        <script src="/js/jquery.fitvids.js"></script>
+        <script src="/js/scripts.js"></script>
+    </body>
+</html>
+
