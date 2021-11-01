@@ -12,7 +12,7 @@
       <pubDate>Fri, 29 Oct 2021 02:15:00 +0000</pubDate>
       
       <guid>/redhat-file-and-directory-permissions/</guid>
-      <description>Hi! While applying STIGs to a RHEL7 system I needed to verify permissions on every file &amp;amp; folder inside each user&amp;rsquo;s home directory. Finding ID V-204473 states &amp;ldquo;The Red Hat Enterprise Linux operating system must be configured so that all files and directories contained in local interactive user home directories have a mode of 0750 or less permissive.&amp;rdquo; If any files are found with a mode more permissive than 0750, this is a finding.</description>
+      <description>Hi! While applying STIGs to a RHEL7 system, I needed to verify permissions on every file &amp;amp; folder inside each user&amp;rsquo;s home directory. Finding ID V-204473 states &amp;ldquo;The Red Hat Enterprise Linux operating system must be configured so that all files and directories contained in local interactive user home directories have a mode of 0750 or less permissive.&amp;rdquo; If any files are found with a mode more permissive than 0750, this is a finding.</description>
     </item>
     
   </channel>

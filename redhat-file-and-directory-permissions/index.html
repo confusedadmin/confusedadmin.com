@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>RedHat File and Directory Permissions</title>
         
-		<meta name="description" content="Hi! While applying STIGs to a RHEL7 system I needed to verify permissions on every file &amp; folder inside each user&rsquo;s home directory. Finding ID V-204473 states &ldquo;The Red Hat Enterprise Linux operating system must be configured so that all files and directories contained in local interactive user home directories have a mode of 0750 or less permissive.&rdquo; If any files are found with a mode more permissive than 0750, this is a finding.">
+		<meta name="description" content="Hi! While applying STIGs to a RHEL7 system, I needed to verify permissions on every file &amp; folder inside each user&rsquo;s home directory. Finding ID V-204473 states &ldquo;The Red Hat Enterprise Linux operating system must be configured so that all files and directories contained in local interactive user home directories have a mode of 0750 or less permissive.&rdquo; If any files are found with a mode more permissive than 0750, this is a finding.">
         <meta name="HandheldFriendly" content="True">
         <meta name="MobileOptimized" content="320">
         <meta name="generator" content="Hugo 0.88.1" />
@@ -80,7 +80,7 @@
     
 
     <h2 id="hi">Hi!</h2>
-<p>While applying STIGs to a RHEL7 system I needed to verify permissions on every file &amp; folder inside each user&rsquo;s home directory. Finding ID <a href="https://www.stigviewer.com/stig/red_hat_enterprise_linux_7/2020-09-03/finding/V-204473">V-204473</a> states &ldquo;The Red Hat Enterprise Linux operating system must be configured so that all files and directories contained in local interactive user home directories have a mode of 0750 or less permissive.&rdquo; If any files are found with a mode more permissive than 0750, this is a finding.</p>
+<p>While applying STIGs to a RHEL7 system, I needed to verify permissions on every file &amp; folder inside each user&rsquo;s home directory. Finding ID <a href="https://www.stigviewer.com/stig/red_hat_enterprise_linux_7/2020-09-03/finding/V-204473">V-204473</a> states &ldquo;The Red Hat Enterprise Linux operating system must be configured so that all files and directories contained in local interactive user home directories have a mode of 0750 or less permissive.&rdquo; If any files are found with a mode more permissive than 0750, this is a finding.</p>
 <p>Unfortunately, the Check Text only provides manual verification and fixes. Home directories can contain a ton of files so manual verification is not an option. I wrote bash scripts for both the check and the fix.</p>
 <pre tabindex="0"><code>#!/bin/bash
 # V-204473
@@ -159,6 +159,29 @@ echo -e &quot;\nDone setting file permissions.\n\n&quot;
 </footer>
 
         
+    <div class="comments">
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "confusedadmin" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+
     </article>
 </div>
 
